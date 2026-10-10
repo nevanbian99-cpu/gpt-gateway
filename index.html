@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal Sumber</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef0f7;--ink:#1b1f3b;--mute:#6a6f8f;--acc:#4f46e5;--card:#fff;--line:#d9dcee}
+@media(prefers-color-scheme:dark){:root{--bg:#12142a;--ink:#eceefc;--mute:#9a9fc4;--card:#1c1f3d;--line:#32365e}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font-family:Manrope,system-ui,sans-serif;padding:20px}
+main{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:28px 24px;display:flex;flex-direction:column;gap:14px}
+.logo{width:64px;height:64px;border-radius:18px;background:var(--acc);display:grid;place-items:center;margin:0 auto 4px}
+h1{font-size:1.4rem;font-weight:800;text-align:center;margin:0}
+p.sub{margin:0 0 6px;text-align:center;color:var(--mute);font-size:.9rem}
+label{font-size:.85rem;font-weight:600}
+input,select{width:100%;margin-top:6px;padding:13px 14px;border-radius:12px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit}
+input:focus,select:focus{outline:2px solid var(--acc);outline-offset:1px}
+button{margin-top:6px;padding:14px;border:0;border-radius:12px;background:var(--acc);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+#err{color:#d6336c;font-size:.85rem;min-height:1.1em;margin:0}
+</style>
+</head>
+<body>
+<main>
+  <div class="logo"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg></div>
+  <h1>Buka website dari sumber</h1>
+  <p class="sub">Website dibuka di dalam halaman ini, lengkap dengan asisten ChatGPT.</p>
+  <div><label for="key">API key OpenAI</label><input id="key" type="password" placeholder="sk-..." autocomplete="off"></div>
+  <div><label for="model">Model</label>
+    <select id="model"><option>gpt-4o-mini</option><option>gpt-4o</option><option>gpt-4.1-mini</option><option>gpt-4.1</option></select></div>
+  <div><label for="url">Source URL</label><input id="url" type="url" placeholder="https://contoh.com/halaman"></div>
+  <p id="err" role="alert"></p>
+  <button id="go">Continue</button>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+$('key').value=sessionStorage.getItem('k')||'';
+$('go').onclick=async()=>{
+  $('err').textContent='';$('go').disabled=true;$('go').textContent='Menghubungkan ke OpenAI...';
+  try{
+    sessionStorage.setItem('k',$('key').value.trim());sessionStorage.setItem('m',$('model').value);
+    const r=await fetch('/api/session',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({url:$('url').value.trim(),apiKey:$('key').value.trim(),model:$('model').value})});
+    const j=await r.json();
+    if(!r.ok)throw new Error(j.error);
+    location.href=j.start;
+  }catch(e){$('err').textContent=e.message;$('go').disabled=false;$('go').textContent='Continue';}
+};
+</script>
+</body>
+</html>
